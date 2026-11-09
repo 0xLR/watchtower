@@ -1,0 +1,11 @@
+{
+  "version": "1.9.15",
+  "targets": {
+    "x86_64-pc-windows-msvc": ["go2rtc_win64.zip", "5b448fc90f15c925406d8da0984301985e385050222c1c2bbdf0a76fe4b1e9cb"],
+    "aarch64-pc-windows-msvc": ["go2rtc_win_arm64.zip", "fc5f7397d740899fb1d5f865821eb8c88b3e3951175ce60dde2dce4d1b858c7c"],
+    "x86_64-apple-darwin": ["go2rtc_mac_amd64.zip", "7ca6075421b824eebe0383d20bd42a6f6a7ec7591a60931d42290f1d375169b9"],
+    "aarch64-apple-darwin": ["go2rtc_mac_arm64.zip", "d0cf858a71803dce2377423bc830639137ee96c335f88e9912e7f7898374266d"],
+    "x86_64-unknown-linux-gnu": ["go2rtc_linux_amd64", "20b46c6910734cb05ecefb234066f36868ff19b42ba1418a7a32e13a3e035712"],
+    "aarch64-unknown-linux-gnu": ["go2rtc_linux_arm64", "af416f22b21a24ab83b8d78642190b4932ae695b4e386853f11d1b0319781763"]
+  }
+}
