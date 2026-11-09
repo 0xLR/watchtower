@@ -1,0 +1,17 @@
+{
+  "name": "watchtower-workspace",
+  "private": true,
+  "packageManager": "pnpm@10.11.0",
+  "scripts": {
+    "dev": "pnpm --filter @watchtower/desktop tauri dev",
+    "build": "pnpm --filter @watchtower/desktop tauri build --no-bundle",
+    "test": "pnpm --filter @watchtower/desktop test && cargo test --workspace",
+    "lint": "pnpm --filter @watchtower/desktop lint && cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings",
+    "sidecar": "node scripts/fetch-go2rtc.mjs",
+    "package": "pnpm sidecar && pnpm notices && pnpm --filter @watchtower/desktop tauri build",
+    "test:smoke": "pnpm --filter @watchtower/desktop test:smoke",
+    "fixtures": "node scripts/dev-fixtures.mjs",
+    "test:media": "node scripts/test-media.mjs",
+    "notices": "node scripts/generate-notices.mjs"
+  }
+}

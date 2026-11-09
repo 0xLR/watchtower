@@ -1,0 +1,13 @@
+node_modules/
+target/
+dist/
+*.log
+apps/desktop/src-tauri/binaries/*
+!apps/desktop/src-tauri/binaries/.gitkeep
+apps/desktop/src-tauri/gen/
+
+.tools/
+.local/
+playwright-report/
+test-results/
+apps/desktop/e2e/playback.json
