@@ -1,0 +1,22 @@
+import { invoke } from '@tauri-apps/api/core';
+import type { AppInfo } from '../../../../packages/ipc-types/AppInfo';
+import type { AppSnapshot } from '../../../../packages/ipc-types/AppSnapshot';
+import type { CameraInput } from '../../../../packages/ipc-types/CameraInput';
+import type { Playback } from '../../../../packages/ipc-types/Playback';
+import type { Settings } from '../../../../packages/ipc-types/Settings';
+
+export const getAppInfo = () => invoke<AppInfo>('app_info');
+export const getSnapshot = () => invoke<AppSnapshot>('snapshot');
+export const testCamera = (input: CameraInput) => invoke<string>('test_camera', { input });
+export const saveCamera = (token: string) => invoke<string>('save_camera', { token });
+export const deleteCamera = (id: string) => invoke<void>('delete_camera', { id });
+export const playback = (id: string, main: boolean) => invoke<Playback>('playback', { id, main });
+export const reorderCameras = (ids: string[]) => invoke<void>('reorder_cameras', { ids });
+export const saveSettings = (settings: Settings) => invoke<void>('save_settings', { settings });
+export const message = (error: unknown): string => typeof error === 'string' ? error : 'The operation could not finish. Please try again.';
+import type { NetworkInterface } from '../../../../packages/ipc-types/NetworkInterface';
+import type { ScanResult } from '../../../../packages/ipc-types/ScanResult';
+export const networkInterfaces = () => invoke<NetworkInterface[]>('network_interfaces');
+export const scanCameras = (interfaces: string[], sweep: boolean) => invoke<ScanResult>('scan_cameras', { interfaces, sweep });
+import type { StreamStatus } from '../../../../packages/ipc-types/StreamStatus';
+export const reportPlayerState = (id: string, main: boolean, status: StreamStatus) => invoke<void>('player_state', { id, main, status });

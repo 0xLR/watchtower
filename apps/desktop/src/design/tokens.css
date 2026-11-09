@@ -1,0 +1,18 @@
+:root {
+  color-scheme: dark;
+  --surface-base: #0b0d0f;
+  --surface-panel: #111418;
+  --surface-raised: #171b20;
+  --text-primary: #e5e7e9;
+  --text-secondary: #929aa5;
+  --text-muted: #626c78;
+  --accent: #d9a441;
+  --fault: #b77272;
+  --hairline: #ffffff12;
+  --tile-line: #ffffff07;
+  --radius: 2px;
+  --font-ui: 'Inter', 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', monospace;
+}
+
+:root { --surface-scrim: #00000080; }
