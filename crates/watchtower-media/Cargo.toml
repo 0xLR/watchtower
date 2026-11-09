@@ -1,0 +1,23 @@
+[package]
+name = "watchtower-media"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+watchtower-core = { path = "../watchtower-core" }
+thiserror.workspace = true
+tokio.workspace = true
+reqwest.workspace = true
+uuid.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+async-trait.workspace = true
+axum = { version = "0.8", features = ["ws"] }
+futures-util = "0.3"
+tokio-tungstenite = "0.26"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_JobObjects", "Win32_Security"] }
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = "0.2"

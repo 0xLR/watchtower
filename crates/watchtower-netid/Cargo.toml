@@ -1,0 +1,14 @@
+[package]
+name = "watchtower-netid"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+watchtower-core = { path = "../watchtower-core" }
+async-trait.workspace = true
+tokio.workspace = true
+watchtower-discovery = { path = "../watchtower-discovery" }
+
+[dev-dependencies]
+watchtower-store = { path = "../watchtower-store" }

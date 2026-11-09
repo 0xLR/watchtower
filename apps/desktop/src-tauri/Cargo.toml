@@ -1,0 +1,35 @@
+[package]
+name = "watchtower-desktop"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+watchtower-core = { path = "../../../crates/watchtower-core" }
+
+watchtower-media = { path = "../../../crates/watchtower-media" }
+
+watchtower-store = { path = "../../../crates/watchtower-store" }
+watchtower-secrets = { path = "../../../crates/watchtower-secrets" }
+tokio.workspace = true
+uuid.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+tracing-subscriber = { version = "0.3", features = ["fmt"] }
+
+watchtower-discovery = { path = "../../../crates/watchtower-discovery" }
+watchtower-netid = { path = "../../../crates/watchtower-netid" }
+async-trait.workspace = true
+watchtower-onvif = { path = "../../../crates/watchtower-onvif" }
+futures-util = "0.3"
+tauri-plugin-single-instance = "2"
+[features]
+custom-protocol = ["tauri/custom-protocol"]
+
+
+
+

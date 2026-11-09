@@ -1,0 +1,17 @@
+[package]
+name = "watchtower-discovery"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+watchtower-core = { path = "../watchtower-core" }
+tokio.workspace = true
+thiserror.workspace = true
+async-trait.workspace = true
+uuid.workspace = true
+network-interface = "2.0.5"
+roxmltree = "0.20"
+url = "2"
+percent-encoding = "2"
+futures-util = "0.3"
