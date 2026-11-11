@@ -10,4 +10,4 @@
 8. Ask when requirements conflict.
 9. Follow docs/design-system.md; all feature colors must use design tokens.
 
-10. License policy: permissive dependencies, plus the user-approved Tauri MPL-2.0 exceptions listed in plan.md. Regenerate third-party notices when dependencies change.
+10. License policy: permissive dependencies, plus the user-approved Tauri MPL-2.0 exceptions. Regenerate third-party notices when dependencies change.

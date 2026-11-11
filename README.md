@@ -123,4 +123,4 @@ and versioned source links are included in [third-party notices](THIRD_PARTY_NOT
 and in packaged installers. FFmpeg and MediaMTX are development fixtures only.
 
 See [architecture](docs/architecture.md), [IP tracking](docs/ip-tracking.md),
-[design system](docs/design-system.md), [roadmap](docs/roadmap.md), and [the plan](plan.md).
+[design system](docs/design-system.md), and [roadmap](docs/roadmap.md).

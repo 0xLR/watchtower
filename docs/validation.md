@@ -49,7 +49,7 @@ used the repository's headless test runner, including real video from go2rtc.
   addressing is accepted, and unavailable tracking is shown in the camera list.
 
 The user approved Tauri's five transitive MPL-2.0 dependencies with notices and
-source links. The exception is recorded in plan.md and ADR 0004; the resolved
+source links. The exception is recorded in ADR 0004; the resolved
 license inventory and generated original notices are included in the repository.
 No release, package name, account, repository or installer has been published.
 
