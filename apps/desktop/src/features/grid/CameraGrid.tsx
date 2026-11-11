@@ -3,7 +3,7 @@ import type { Playback } from '../../../../../packages/ipc-types/Playback';
 import { StreamPlayer, type PlayerState } from '../../player/StreamPlayer';
 import { columnsFor, reorder, type Layout } from './layout';
 
-type GridCamera = { id: string; name: string; host: string };
+type GridCamera = { id: string; name: string; host: string; media_engine?: string | null };
 type GridProps = {
   cameras: GridCamera[]; layout: Layout; paused: boolean; substreams: boolean;
   playback: (id: string, main: boolean) => Promise<Playback>;
@@ -36,7 +36,7 @@ export function CameraGrid(props: GridProps) {
     {expanded && <button className="button return-grid" onClick={() => setExpanded(null)}>← Return to grid <kbd>Esc</kbd></button>}
     {cameras.map(camera => {
       const index = props.cameras.findIndex(c => c.id === camera.id);
-      return <div key={`${camera.id}:${camera.host}`} draggable={!expanded} onDragStart={event => { setDragged(camera.id); event.dataTransfer.setData('text/plain', camera.id); event.dataTransfer.effectAllowed = 'move'; }} onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); if (dragged) props.onReorder(reorder(props.cameras.map(c => c.id), dragged, camera.id)); setDragged(undefined); }}>
+      return <div key={`${camera.id}:${camera.host}:${camera.media_engine ?? "default"}`} draggable={!expanded} onDragStart={event => { setDragged(camera.id); event.dataTransfer.setData('text/plain', camera.id); event.dataTransfer.effectAllowed = 'move'; }} onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); if (dragged) props.onReorder(reorder(props.cameras.map(c => c.id), dragged, camera.id)); setDragged(undefined); }}>
         <CameraTile camera={camera} index={index} expanded={expanded === camera.id} main={expanded === camera.id || !props.substreams} paused={props.paused} playback={props.playback} onState={props.onState} onExpand={() => setExpanded(expanded ? null : camera.id)} onEdit={() => props.onEdit(camera.id)} move={offset => { const target = props.cameras[index + offset]; if (target) props.onReorder(reorder(props.cameras.map(c => c.id), camera.id, target.id)); }} />
       </div>;
     })}

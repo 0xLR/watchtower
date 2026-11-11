@@ -16,6 +16,11 @@ async-trait.workspace = true
 axum = { version = "0.8", features = ["ws"] }
 futures-util = "0.3"
 tokio-tungstenite = "0.26"
+retina = "=0.4.20"
+webrtc = "=0.14.0"
+bytes = "1"
+url = "2"
+percent-encoding = "2"
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_JobObjects", "Win32_Security"] }

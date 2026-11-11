@@ -17,9 +17,10 @@ async fn sidecar_lifecycle_and_playback_boundary() {
     );
     let playback = media.playback("fixture");
     assert!(playback.websocket_url.starts_with("ws://127.0.0.1:"));
-    let http = playback
-        .hls_url
-        .replace("stream.m3u8?src=fixture&mp4", "streams");
+    let http = format!(
+        "{}/streams",
+        playback.hls_url.split("/stream.m3u8").next().unwrap()
+    );
     assert_eq!(reqwest::get(http).await.expect("gateway").status(), 404);
     media.simulate_crash().await;
     tokio::time::sleep(Duration::from_secs(4)).await;
@@ -41,6 +42,27 @@ async fn rtsp_fixture_produces_video() {
         .test_stream("fixture")
         .await
         .expect("RTSP video probe");
+    media.shutdown().await;
+}
+
+#[tokio::test]
+#[ignore = "requires local RTSP fixture and fetched sidecar"]
+async fn missing_rtsp_path_has_safe_specific_error() {
+    let binary = PathBuf::from(std::env::var("WATCHTOWER_TEST_SIDECAR").expect("sidecar path"));
+    let media = Media::launch(&binary).await.unwrap();
+    media
+        .add_stream(
+            "missing",
+            "rtsp://synthetic-user:synthetic-password@127.0.0.1:8554/missing-path",
+        )
+        .await
+        .unwrap();
+    let error = media.test_stream("missing").await.unwrap_err();
+    assert!(matches!(
+        error,
+        watchtower_media::MediaError::DescribeRejected
+    ));
+    assert!(!error.to_string().contains("synthetic"));
     media.shutdown().await;
 }
 

@@ -1,6 +1,7 @@
 # Validation report
 
-Local implementation/verification date: 2026-11-09. Host: Windows x64, Node 22,
+Initial implementation/verification date: 2026-11-09; selectable-engine follow-up
+2026-11-10. Host: Windows x64, Node 22,
 stable Rust, WebView2. Camera fixtures were synthetic localhost RTSP sources;
 synthetic-media tests used no physical camera credentials or LAN configuration changes. A separate, explicitly selected-interface discovery probe is recorded below.
 
@@ -54,13 +55,89 @@ No release, package name, account, repository or installer has been published.
 
 ## Review artifacts
 
-- `target/release/bundle/nsis/Watchtower_0.1.0_x64-setup.exe` — 11,152,558 bytes,
+- `target/release/bundle/nsis/Watchtower_0.2.0_x64-setup.exe` —
   current-user NSIS installer; Authenticode status `NotSigned`.
-- `target/release/bundle/msi/Watchtower_0.1.0_x64_en-US.msi` — 15,253,504 bytes;
+- `target/release/bundle/msi/Watchtower_0.2.0_x64_en-US.msi` —
   Authenticode status `NotSigned`.
 - `target/release/bundle/SHA256SUMS.txt` — checksums for both final installers.
 
-The installer manifest includes the bundled go2rtc executable and all three
+The installer manifest includes go2rtc and MediaMTX executables and all four
 license resources. Synthetic camera processes and the test gateway were stopped;
 the temporary playback-capability JSON file was removed. First-launch and live
 grid screenshots were visually inspected after rendering.
+
+## RTSP follow-up
+
+Full URLs now test only the supplied stream instead of inferring `/stream2`.
+Explicit substream failures identify the successful main stream and explain how
+to clear the optional substream. Probe failures expose fixed diagnostic messages,
+with bounded upstream bodies kept only in memory. Literal percent sequences in
+credentials survive URL reconstruction. Regression checks cover these changes,
+including a real RTSP server rejecting a missing stream and a successful retry
+after clearing a failing substream. The reported physical-camera failure still
+requires a retry with the updated build; its cause has not been confirmed.
+
+The 0.1.1 follow-up disables unnecessary ONVIF talkback negotiation for all
+source registrations, including restarts and playback reconciliation. A
+socket-level RTSP fixture rejecting talkback and subsequent connections failed
+with the previous defaults and passes with receive-only registration on the
+first connection. Rejected requests now identify the allowlisted RTSP stage
+(DESCRIBE, SETUP, or OPTIONS) without returning upstream text or credentials.
+
+## C530WS diagnostic follow-up
+
+A read-only probe on the selected Wi-Fi interface discovered one C530WS. An
+unauthenticated DESCRIBE for `/stream1` returned 401 with Basic and Digest
+challenges. Separate credential prompts supplied credentials in memory only;
+authenticated Basic and Digest DESCRIBE probes both returned RTSP 406. No
+PLAY or SETUP requests were sent by these diagnostics. At the connection-count
+check, this Windows host had no established TCP connections to remote port 554.
+The Digest calculation passed the standard reference vector. These observations
+do not establish whether the camera currently refuses every new RTSP session
+or only this request pattern; a fresh VLC comparison is still required.
+
+The diagnostic is a development helper, not bundled application code. Build
+`cargo build -p watchtower-discovery --example rtsp_status`, then run
+`powershell.exe -NoProfile -STA -File scripts/diagnose-camera.ps1` on Windows.
+It currently selects Wi-Fi and requires exactly one discovered C530WS. It never
+writes credentials to arguments, files, or tool output. Cancel the native prompt
+to stop. Run its pure Digest reference check with `-SelfTest`.
+
+## Selectable engines, 0.2.0
+
+- Native Retina 0.4.20 plus webrtc-rs 0.14.0, go2rtc 1.9.15, and MediaMTX 1.21.3
+  are selectable globally and through nullable camera overrides.
+- `pnpm test` and `pnpm lint` pass. Migration tests cover old JSON settings and
+  existing cameras with no saved preferences, preserving go2rtc in both cases.
+- The real-media suite passes 22 browser checks across the three engines,
+  with explicit skips for unsupported transports and the separate saved-source
+  test. It covers nine advancing videos, quality switching, expansion, reorder,
+  pause/resume, preference persistence, override invalidation and explicit WHEP
+  playback. Supported HLS fallbacks are forced separately.
+- Additional Rust checks pass for native viewer sharing/idle cleanup, native
+  playback with both executable paths absent, runtime config privacy, source
+  alias sharing, adapter switching, and MediaMTX crash/replay.
+- A proxy allowing only one RTSP connection confirms that testing an already-live
+  Retina source receives fresh frames without opening a second camera connection.
+- With user authorization, three saved cameras were read without changing their
+  configuration. They resolve to one distinct credential-free RTSP source. A
+  real three-tile grid passed against each engine, with advancing video and
+  screenshots in `docs/screenshots/saved-{retina,go2rtc,mediamtx}.png`.
+- Source aliases share one physical registration per engine, preventing duplicate
+  upstream connections for repeated URLs. Removing an alias preserves other
+  viewers; releasing the last alias removes the physical registration.
+- All 899 resolved dependency versions have regenerated notices. The five
+  approved Tauri MPL dependencies remain the only copyleft exceptions. MediaMTX
+  archives and its MIT license are verified from the official release digests.
+- The final Windows 0.2.0 release build was checked in its native WebView2 UI.
+  All three saved tiles displayed live 1280×720 WebRTC video with Retina selected.
+  Saving the global default and restarting preserved Retina and restored all
+  three live tiles. Process/socket inspection confirmed no media sidecars and
+  one shared upstream RTSP connection. The app remains open for user review.
+- Unsigned NSIS and MSI installers were built under `target/release/bundle`,
+  with final artifact digests recorded in `SHA256SUMS.txt` in that directory.
+
+Retina currently supports H.264 video over WebRTC without transcoding or audio.
+Other codecs require another engine. These Windows/Chromium checks do not
+establish macOS or Linux runtime compatibility. No physical C530WS connection
+success, signing, clean-machine installation, or CI execution is claimed.

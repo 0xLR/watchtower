@@ -49,10 +49,10 @@ impl AppState {
         let store = Store::open(&directory.join("watchtower.sqlite"))
             .await
             .map_err(|e| e.to_string())?;
-        let media = Media::launch(&sidecar_path(app))
-            .await
-            .map(Arc::new)
-            .map_err(|e| e.to_string());
+        let media = Ok(Arc::new(Media::new(
+            &sidecar_path(app, "go2rtc"),
+            &sidecar_path(app, "mediamtx"),
+        )));
         let state = Arc::new(Self {
             store,
             media,
@@ -110,12 +110,19 @@ impl AppState {
         password: Option<&str>,
     ) -> Result<(), String> {
         let media = self.media()?;
+        let engine = camera.media_engine.unwrap_or(
+            self.store
+                .settings()
+                .await
+                .map_err(|e| e.to_string())?
+                .media_engine,
+        );
         for main in [true, false] {
             let url = camera
                 .source_url(password, main)
                 .map_err(|e| e.to_string())?;
             media
-                .update_stream(&stream_id(&camera.id, main), &url)
+                .ensure_stream_on(&stream_id(&camera.id, main), &url, engine)
                 .await?;
         }
         Ok(())
@@ -169,10 +176,18 @@ impl AppState {
             .map_err(|e| e.to_string())?;
         let stream = stream_id(id, main);
         let media = self.media()?;
-        media.ensure_stream(&stream, &source).await?;
+        let engine = camera.media_engine.unwrap_or(
+            self.store
+                .settings()
+                .await
+                .map_err(|e| e.to_string())?
+                .media_engine,
+        );
+        media.ensure_stream_on(&stream, &source, engine).await?;
         Ok(media.playback(&stream))
     }
     pub async fn test_camera(&self, input: CameraInput) -> Result<String, String> {
+        let _guard = self.operation.lock().await;
         let mut parsed = parse_address(&input).map_err(|e| e.to_string())?;
         if parsed.host.parse::<std::net::IpAddr>().is_err() {
             if let Ok(Ok(addresses)) = tokio::time::timeout(
@@ -231,10 +246,21 @@ impl AppState {
             let url = camera
                 .source_url(password.as_deref(), main)
                 .map_err(|e| e.to_string())?;
-            media.add_stream(&test_id, &url).await?;
+            let engine = camera.media_engine.unwrap_or(
+                self.store
+                    .settings()
+                    .await
+                    .map_err(|e| e.to_string())?
+                    .media_engine,
+            );
+            media.ensure_stream_on(&test_id, &url, engine).await?;
             let result = media.test_stream(&test_id).await.map_err(|e| e.to_string());
             let _ = media.remove_stream(&test_id).await;
-            result?;
+            result.map_err(|error| if main {
+                format!("Main stream: {error}")
+            } else {
+                format!("Main stream connected; substream failed: {error} Clear the optional substream under Stream paths to use the main stream only.")
+            })?;
             if camera.path_sub.is_none() {
                 break;
             }
@@ -310,25 +336,25 @@ impl AppState {
 pub fn stream_id(id: &str, main: bool) -> String {
     format!("{}_{}", id, if main { "main" } else { "sub" })
 }
-fn sidecar_path(app: &AppHandle) -> PathBuf {
+fn sidecar_path(app: &AppHandle, name: &str) -> PathBuf {
     let suffix = if cfg!(windows) { ".exe" } else { "" };
     if let Ok(exe) = std::env::current_exe() {
         if let Some(parent) = exe.parent() {
-            let sibling = parent.join(format!("go2rtc{suffix}"));
+            let sibling = parent.join(format!("{name}{suffix}"));
             if sibling.exists() {
                 return sibling;
             }
         }
     }
     if let Ok(resources) = app.path().resource_dir() {
-        let bundled = resources.join(format!("go2rtc{suffix}"));
+        let bundled = resources.join(format!("{name}{suffix}"));
         if bundled.exists() {
             return bundled;
         }
     }
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("binaries")
-        .join(format!("go2rtc-{}{suffix}", env!("WATCHTOWER_TARGET")))
+        .join(format!("{name}-{}{suffix}", env!("WATCHTOWER_TARGET")))
 }
 
 #[cfg(test)]
@@ -352,6 +378,7 @@ mod tests {
     }
     fn input() -> CameraInput {
         CameraInput {
+            media_engine: Some(MediaEngine::Go2rtc),
             id: None,
             name: "Synthetic camera".into(),
             address: "rtsp://127.0.0.1:8554/watchtower-test".into(),
@@ -413,6 +440,20 @@ mod tests {
         state.media().unwrap().shutdown().await;
     }
     struct LockedSecrets;
+    #[tokio::test]
+    #[ignore = "requires local synthetic RTSP server and fetched sidecar"]
+    async fn optional_substream_failure_identifies_working_main_and_can_be_cleared() {
+        let state = test_state(Arc::new(MemorySecrets::default())).await;
+        let mut value = input();
+        value.path_sub = Some("/missing-substream".into());
+        let error = state.test_camera(value.clone()).await.unwrap_err();
+        assert!(error.contains("Main stream connected; substream failed"));
+        assert!(error.contains("stream path"));
+        assert!(!error.contains("unique-test"));
+        value.path_sub = Some(String::new());
+        assert!(state.test_camera(value).await.is_ok());
+        state.media().unwrap().shutdown().await;
+    }
     impl SecretStore for LockedSecrets {
         fn get(&self, _: &str) -> Result<Option<String>, SecretError> {
             Ok(None)

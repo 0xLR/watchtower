@@ -56,6 +56,8 @@ test('discovery requires explicit interface selection', async ({ page }) => {
 });
 
 test('HLS receives video when WebRTC and MSE signalling fail', async ({ page }) => {
+  test.skip(process.env.WATCHTOWER_TEST_ENGINE === 'retina', 'Retina advertises WebRTC only');
+  await page.route('**/whep', route => route.abort());
   await page.addInitScript(() => {
     const Native = window.WebSocket;
     window.WebSocket = class extends Native {
@@ -94,4 +96,48 @@ test('editing a main-only camera preserves its empty substream', async ({ page }
   await expect(page.getByLabel('Substream path (empty uses main)')).toHaveValue('');
   await page.getByRole('checkbox', { name: 'Use an empty password', exact: true }).check();
   await expect(page.getByLabel('Substream path (empty uses main)')).toBeEnabled();
+});
+
+test('engine preference persists and camera override invalidates its test', async ({ page }) => {
+  await page.goto('/e2e/harness.html');
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await page.getByLabel('Media engine', { exact: true }).selectOption('retina');
+  await page.getByRole('button', { name: 'Save preferences' }).click();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(page.getByLabel('Media engine', { exact: true })).toHaveValue('retina');
+  await page.screenshot({ path: '../../docs/screenshots/engine-settings.png', fullPage: true });
+  await page.getByRole('button', { name: 'Close panel', exact: true }).click();
+  await page.getByRole('button', { name: 'Add manually', exact: true }).click();
+  await page.getByLabel('Camera name', { exact: true }).fill('Engine test');
+  await page.getByLabel('Camera address or full RTSP URL').fill('127.0.0.1');
+  await page.getByRole('button', { name: 'Test connection', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Save camera', exact: true })).toBeEnabled();
+  await page.getByLabel('Media engine', { exact: true }).selectOption('mediamtx');
+  await expect(page.getByRole('button', { name: 'Save camera', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: 'Test connection', exact: true }).click();
+  await page.getByRole('button', { name: 'Save camera', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit Engine test', exact: true }).click();
+  await expect(page.getByLabel('Media engine', { exact: true })).toHaveValue('mediamtx');
+});
+
+test('native and MediaMTX deliver synthetic video through WebRTC', async ({ page }) => {
+  test.skip(!['retina', 'mediamtx'].includes(process.env.WATCHTOWER_TEST_ENGINE ?? ''), 'WHEP engine test');
+  test.skip(!!process.env.WATCHTOWER_SAVED_SOURCES, 'Uses the synthetic H.264 fixture');
+  const statuses: number[] = [];
+  page.on('response', response => { if (response.url().endsWith('/whep')) statuses.push(response.status()); });
+  await page.addInitScript(() => {
+    const events: string[] = []; Object.assign(window, { __rtcDebug: events });
+    const Native = window.RTCPeerConnection;
+    window.RTCPeerConnection = class extends Native {
+      constructor(config?: RTCConfiguration) {
+        super(config);
+        this.addEventListener('connectionstatechange', () => events.push(`peer:${this.connectionState}`));
+        this.addEventListener('iceconnectionstatechange', () => events.push(`ice:${this.iceConnectionState}`));
+        this.addEventListener('track', () => events.push('track'));
+      }
+    };
+  });
+  await page.goto('/e2e/harness.html?count=1');
+  try { await expect(page.locator('.video-readout')).toContainText('WEBRTC', { timeout: 25000 }); }
+  catch (error) { console.log('WHEP status/state', statuses, await page.evaluate(() => (window as unknown as { __rtcDebug: string[] }).__rtcDebug)); throw error; }
 });

@@ -46,6 +46,10 @@ impl Store {
         rows.into_iter()
             .map(|row| {
                 Ok(Camera {
+                    media_engine: row
+                        .try_get::<Option<String>, _>("media_engine")?
+                        .map(|value| serde_json::from_value(serde_json::Value::String(value)))
+                        .transpose()?,
                     id: row.try_get("id")?,
                     name: row.try_get("name")?,
                     created_at: row.try_get("created_at")?,
@@ -67,6 +71,16 @@ impl Store {
             .bind(&camera.id).bind(&camera.name).bind(camera.created_at).bind(camera.sort_order).bind(&camera.host).bind(camera.port).bind(&camera.path_main).bind(&camera.path_sub).bind(&camera.username).bind(&camera.source_kind).bind(camera.is_local).execute(&mut *tx).await?;
         sqlx::query("INSERT INTO camera_identity (camera_id,mac,onvif_endpoint_uuid,serial,model,last_seen_at,last_seen_host) VALUES (?,?,?,?,?,?,?) ON CONFLICT(camera_id) DO UPDATE SET mac=excluded.mac,onvif_endpoint_uuid=excluded.onvif_endpoint_uuid,serial=excluded.serial,model=excluded.model,last_seen_at=excluded.last_seen_at,last_seen_host=excluded.last_seen_host")
             .bind(&camera.id).bind(&identity.mac).bind(&identity.onvif_endpoint_uuid).bind(&identity.serial).bind(&identity.model).bind(identity.last_seen_at).bind(&identity.last_seen_host).execute(&mut *tx).await?;
+        let engine = camera
+            .media_engine
+            .map(serde_json::to_value)
+            .transpose()?
+            .and_then(|v| v.as_str().map(str::to_owned));
+        sqlx::query("UPDATE cameras SET media_engine=? WHERE id=?")
+            .bind(engine)
+            .bind(&camera.id)
+            .execute(&mut *tx)
+            .await?;
         tx.commit().await?;
         Ok(())
     }

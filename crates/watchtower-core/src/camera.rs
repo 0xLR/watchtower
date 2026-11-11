@@ -5,6 +5,8 @@ use ts_rs::TS;
 #[derive(Debug, Clone, Serialize, Deserialize, TS, PartialEq, Eq)]
 #[ts(export, export_to = "../../../packages/ipc-types/Camera.ts")]
 pub struct Camera {
+    #[serde(default)]
+    pub media_engine: Option<crate::MediaEngine>,
     pub id: String,
     pub name: String,
     #[ts(type = "number")]
@@ -22,6 +24,8 @@ pub struct Camera {
 #[derive(Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../packages/ipc-types/CameraInput.ts")]
 pub struct CameraInput {
+    #[serde(default)]
+    pub media_engine: Option<crate::MediaEngine>,
     pub id: Option<String>,
     pub name: String,
     pub address: String,
@@ -54,6 +58,8 @@ pub struct CameraView {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export, export_to = "../../../packages/ipc-types/Settings.ts")]
 pub struct Settings {
+    #[serde(default)]
+    pub media_engine: crate::MediaEngine,
     pub layout: String,
     pub default_substream: bool,
     pub background_sweep: bool,
@@ -62,6 +68,7 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Self {
+            media_engine: crate::MediaEngine::Retina,
             layout: "auto".into(),
             default_substream: true,
             background_sweep: false,
@@ -86,6 +93,7 @@ pub struct AddressChanged {
 }
 
 pub struct ParsedAddress {
+    pub media_engine: Option<crate::MediaEngine>,
     pub host: String,
     pub port: u16,
     pub path_main: String,
@@ -172,7 +180,7 @@ pub fn parse_address(input: &CameraInput) -> Result<ParsedAddress, AddressError>
         } else {
             Some(path.clone())
         }
-    } else if !full || url.path().is_empty() || url.path() == "/" || url.path() == "/stream1" {
+    } else if !full {
         Some("/stream2".into())
     } else {
         None
@@ -200,6 +208,7 @@ pub fn parse_address(input: &CameraInput) -> Result<ParsedAddress, AddressError>
         })
     });
     Ok(ParsedAddress {
+        media_engine: input.media_engine,
         is_local: is_private(&host),
         host,
         port: url.port().unwrap_or(554),
@@ -219,6 +228,7 @@ pub fn parse_address(input: &CameraInput) -> Result<ParsedAddress, AddressError>
 impl ParsedAddress {
     pub fn into_camera(self, id: String, name: String, created_at: i64, sort_order: i32) -> Camera {
         Camera {
+            media_engine: self.media_engine,
             id,
             name: name.trim().into(),
             created_at,
@@ -247,9 +257,14 @@ impl Camera {
         };
         let mut url = url::Url::parse(&format!("rtsp://{host}:{}{path}", self.port))
             .map_err(|_| AddressError)?;
-        url.set_username(&self.username).map_err(|_| AddressError)?;
+        // URL's userinfo setters preserve existing percent escapes. These fields
+        // are decoded credentials, so literal percent signs must be escaped first.
+        url.set_username(&self.username.replace('%', "%25"))
+            .map_err(|_| AddressError)?;
         if !self.username.is_empty() {
-            url.set_password(password).map_err(|_| AddressError)?;
+            let encoded_password = password.map(|value| value.replace('%', "%25"));
+            url.set_password(encoded_password.as_deref())
+                .map_err(|_| AddressError)?;
         }
         Ok(url.into())
     }

@@ -1,12 +1,13 @@
 # Packaging and release review
 
-`pnpm package` downloads and verifies the pinned go2rtc sidecar, regenerates
+`pnpm package` downloads and verifies the pinned go2rtc and MediaMTX sidecars, regenerates
 third-party notices and invokes Tauri bundling. Artifacts are under
 `target/release/bundle/`. The manual GitHub workflow builds Windows MSI/NSIS,
 macOS app/DMG, and Linux DEB/RPM artifacts; it does not publish a release.
 
-The sidecar is bundled as an external binary. All installers include the
-application MIT license, go2rtc's MIT license, and a generated dependency notice
+The sidecars are bundled as external binaries and launch only when selected.
+Retina is compiled into the application. All installers include the
+application MIT license, go2rtc and MediaMTX MIT licenses, and a generated dependency notice
 file with original texts and versioned source links. The five MPL-2.0 transitive
 Tauri dependencies are an explicit user-approved exception (ADR 0004).
 
@@ -27,3 +28,7 @@ verify a physical Tapo camera and a DHCP move; verify Linux playback and macOS
 lifecycle; supply signing/notarization; then check project-name/package collisions.
 The existing containrrr/watchtower Docker updater is unrelated. Nothing has been
 published or registered under this name by this implementation.
+
+MediaMTX upstream prebuilt archives cover Windows x64, macOS x64/arm64 and Linux
+x64/arm64 in the checked-in manifest. A Windows ARM64 packaging target would need
+a separately verified MediaMTX build; it is not advertised as a completed target.

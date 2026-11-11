@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Playback } from '../../../../packages/ipc-types/Playback';
-import { nextTransport, type Transport } from './transport';
+import { nextSupportedTransport, type Transport } from './transport';
+import { connectWhep } from './whep';
 
 export type PlayerState = 'connecting' | 'live' | 'unreachable' | 'paused';
 export function StreamPlayer({ load, paused, onState }: { load: () => Promise<Playback>; paused: boolean; onState?: (state: PlayerState) => void }) {
@@ -17,11 +18,12 @@ export function StreamPlayer({ load, paused, onState }: { load: () => Promise<Pl
     let cleanup = () => {};
     let timeout: ReturnType<typeof setTimeout> | undefined;
     let progress: ReturnType<typeof setInterval> | undefined;
+    let supported = ['webrtc', 'mse', 'hls'];
     update('connecting'); setDimensions('');
     const failed = () => {
       if (disposed) return;
       disposed = true; cleanup(); clearTimeout(timeout); clearInterval(progress);
-      const next = nextTransport(transport);
+      const next = nextSupportedTransport(transport, supported);
       if (next) setTransport(next);
       else { update('unreachable'); timeout = setTimeout(() => { setTransport('webrtc'); setAttempt(a => a + 1); }, 15000); }
     };
@@ -29,6 +31,12 @@ export function StreamPlayer({ load, paused, onState }: { load: () => Promise<Pl
       try {
         const playback = await load();
         if (disposed) return;
+        supported = playback.transports ?? supported;
+        if (!supported.includes(transport)) {
+          const first = supported.find(mode => ['webrtc', 'mse', 'hls'].includes(mode));
+          if (first) { setTransport(first as Transport); return; }
+          throw new Error('No supported playback transport');
+        }
         let video: HTMLVideoElement;
         if (transport === 'hls') {
           video = document.createElement('video');
@@ -46,6 +54,11 @@ export function StreamPlayer({ load, paused, onState }: { load: () => Promise<Pl
             cleanup = () => { video.pause(); video.removeAttribute('src'); video.load(); video.remove(); };
             video.src = playback.hls_url;
           } else { video.remove(); failed(); return; }
+        } else if (playback.whep_url && transport === 'webrtc') {
+          video = document.createElement('video');
+          video.muted = true; video.autoplay = true; video.playsInline = true;
+          host.current?.appendChild(video);
+          cleanup = connectWhep(video, playback.whep_url, failed);
         } else {
           const { createStream } = await import('./element');
           if (disposed) return;
@@ -67,7 +80,7 @@ export function StreamPlayer({ load, paused, onState }: { load: () => Promise<Pl
           lastTime = video.currentTime;
           if (stalled >= 12) failed();
         }, 1000);
-        timeout = setTimeout(failed, transport === 'hls' ? 16000 : 8000);
+        timeout = setTimeout(failed, transport === 'hls' ? 16000 : playback.whep_url ? 15000 : 8000);
         void video.play().catch(() => {});
       } catch { failed(); }
     })();

@@ -13,11 +13,21 @@ when `cargo test` runs. CI checks that regeneration produces no diff.
 | watchtower-secrets | Native Windows Credential Manager, macOS Keychain, Linux Secret Service; memory fake for tests |
 | watchtower-discovery | Selected-interface IPv4 WS-Discovery, RTSP DNS-SD/mDNS, bounded TCP probes and neighbor tables |
 | watchtower-netid | Pure identity matcher, retry policy and recovery orchestration behind fakeable traits |
-| watchtower-media | Supervised go2rtc, runtime stream API, safe producer counters and playback gateway |
+| watchtower-media | Media facade, native Retina/WebRTC, supervised go2rtc/MediaMTX, safe counters and playback gateways |
 | watchtower-onvif | GetDeviceInformation with WS-Security UsernameToken digest; no PTZ |
 | desktop backend | Application wiring, tested-save receipts, IPC, health watcher and events |
 
 ## Media isolation
+
+The media facade selects a lazy adapter from the camera override or global
+preference. A native Retina adapter receives H.264 RTSP and forwards encoded
+frames through webrtc-rs/WHEP; it requires no executable. Its reader is shared
+among viewers and stops when unused. MediaMTX adds a supervised optional adapter
+with WHEP and fMP4 HLS. Playback descriptors list each engine's transports;
+fallback skips unsupported modes. The frontend owns WHEP session cleanup.
+See [ADR 0006](adr/0006-selectable-media-engines.md) for lifecycle and security.
+
+The following go2rtc-specific isolation remains in its adapter:
 
 The pinned go2rtc binary is bundled beside the executable. Development fetches
 use upstream SHA-256 digests checked into the repository. The supervisor retries

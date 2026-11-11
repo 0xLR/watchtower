@@ -3,9 +3,10 @@ import type { Camera } from '../../../../../packages/ipc-types/Camera';
 import type { CameraInput } from '../../../../../packages/ipc-types/CameraInput';
 import { testCamera, saveCamera, deleteCamera, message } from '../../lib/client';
 import { Button, Field } from '../../design/primitives';
+import { EnginePicker } from '../settings/EnginePicker';
 
 export function CameraForm({ camera, initialHost, initialName, discovered, onSaved, onCancel }: { camera?: Camera; initialHost?: string; initialName?: string; discovered?: boolean; onSaved: () => void; onCancel: () => void }) {
-  const [input, setInput] = useState<CameraInput>({ id: camera?.id ?? null, name: camera?.name ?? initialName ?? '', address: camera ? `${camera.host.includes(':') ? `[${camera.host}]` : camera.host}:${camera.port}` : initialHost ?? '', username: camera?.username ?? '', password: null, path_main: camera?.path_main ?? '/stream1', path_sub: camera ? camera.path_sub ?? '' : '/stream2', source_kind: camera?.source_kind ?? (discovered ? 'onvif_discovered' : null) });
+  const [input, setInput] = useState<CameraInput>({ media_engine: camera?.media_engine ?? null, id: camera?.id ?? null, name: camera?.name ?? initialName ?? '', address: camera ? `${camera.host.includes(':') ? `[${camera.host}]` : camera.host}:${camera.port}` : initialHost ?? '', username: camera?.username ?? '', password: null, path_main: camera?.path_main ?? '/stream1', path_sub: camera ? camera.path_sub ?? '' : '/stream2', source_kind: camera?.source_kind ?? (discovered ? 'onvif_discovered' : null) });
   const [emptyPassword, setEmptyPassword] = useState(false);
   const [token, setToken] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -26,9 +27,10 @@ export function CameraForm({ camera, initialHost, initialName, discovered, onSav
   };
   return <form onSubmit={test} className="stack">
     <p className="supporting">Use the camera's local RTSP account. For Tapo, enable Camera Account in its advanced settings first.</p>
+    <EnginePicker inherit value={input.media_engine} onChange={media_engine => change({ media_engine })} disabled={busy} />
     <Field label="Camera name" required maxLength={120} autoFocus value={input.name} onChange={e => change({ name: e.target.value })} disabled={busy} placeholder="Front entrance" />
     <Field label="Camera address or full RTSP URL" required type="password" autoComplete="off" spellCheck={false} value={input.address} onChange={e => change({ address: e.target.value, ...(e.target.value.includes('://') ? { path_main: null, path_sub: null } : {}) })} disabled={busy} placeholder="192.168.1.30 or rtsp://…" />
-    <p className="field-help">Masked because a pasted URL may contain credentials. Saved addresses appear in the camera list.</p>
+    <p className="field-help">Masked because a pasted URL may contain credentials. A full URL uses only that stream; add an optional substream under Stream paths.</p>
     <div className="field-row"><Field label="Username" autoComplete="off" value={input.username} onChange={e => change({ username: e.target.value })} disabled={busy} /><Field label={camera ? 'Password (blank keeps saved value)' : 'Password'} type="password" autoComplete="new-password" value={input.password ?? ''} onChange={e => change({ password: e.target.value || null })} disabled={busy || emptyPassword} /></div>
     {camera && <label className="check-field"><input type="checkbox" checked={emptyPassword} disabled={busy} onChange={e => { setEmptyPassword(e.target.checked); change({ password: e.target.checked ? '' : null }); }} />Use an empty password</label>}
     <details><summary>Stream paths</summary><div className="stack"><Field label="Main stream path" value={input.path_main ?? ''} onChange={e => change({ path_main: e.target.value })} placeholder="From URL, or /stream1" disabled={busy} /><Field label="Substream path (empty uses main)" value={input.path_sub ?? ''} onChange={e => change({ path_sub: e.target.value })} placeholder="/stream2" disabled={busy} /></div></details>

@@ -16,3 +16,7 @@ platform/hardware checks remain acceptance gates rather than assumed successes.
 
 Recording, PTZ, rewind/timeline, detection and multi-site remain future work.
 Future Rust crates and frontend feature directories fit the existing boundaries.
+
+On 2026-11-10 the user authorized selectable engines: native Retina plus optional
+go2rtc and MediaMTX sidecars. ADR 0006 records the facade, compatible settings
+migration, per-camera overrides, transport capabilities and verification scope.

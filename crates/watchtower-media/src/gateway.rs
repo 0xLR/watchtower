@@ -1,4 +1,4 @@
-use crate::{Engine, MediaError};
+use crate::{go2rtc::Engine, MediaError};
 use axum::{
     extract::{ws::Message, Path, Query, State, WebSocketUpgrade},
     http::{HeaderMap, StatusCode},
@@ -94,7 +94,7 @@ async fn websocket(
         let _=upstream_send.close().await;
     })
 }
-fn allowed_origin(headers: &HeaderMap) -> bool {
+pub(crate) fn allowed_origin(headers: &HeaderMap) -> bool {
     headers
         .get("origin")
         .and_then(|v| v.to_str().ok())

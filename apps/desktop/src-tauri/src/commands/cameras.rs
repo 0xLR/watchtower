@@ -57,12 +57,14 @@ pub async fn save_settings(
     state: State<'_, Arc<AppState>>,
     settings: Settings,
 ) -> Result<(), String> {
+    let _guard = state.operation.lock().await;
     if !matches!(settings.layout.as_str(), "auto" | "1" | "2" | "3" | "4") {
         return Err("Unknown grid layout".into());
     }
     if settings.selected_interfaces.len() > 4 {
         return Err("Select at most four network interfaces".into());
     }
+    state.tested.lock().await.clear();
     state
         .store
         .save_settings(&settings)

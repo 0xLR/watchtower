@@ -1,0 +1,10 @@
+{
+  "version": "1.21.3",
+  "targets": {
+    "x86_64-pc-windows-msvc": ["windows_amd64.zip", "b2f5246b07cb72961df03b8d5e8cad43dc657bcf3f49a87bb031bdf22721af74"],
+    "x86_64-apple-darwin": ["darwin_amd64.tar.gz", "8a8416ee2ff5d17d9366498b6d88b76ab6d3afcda50b6d7321ccddb349bdbaf2"],
+    "aarch64-apple-darwin": ["darwin_arm64.tar.gz", "bc1a0762fd18ffb413bcd81dcb9a072ac159fbd1f27e79ac6f14598aaac5ed3f"],
+    "x86_64-unknown-linux-gnu": ["linux_amd64.tar.gz", "0a2ea7eba96023631efa1bea7804823a9145b043b6646a8a05798d4ac24ed635"],
+    "aarch64-unknown-linux-gnu": ["linux_arm64.tar.gz", "27f038237cb5f77a724f6afc58eca2798f2bc4edf9989895631a80eeb41a4fe2"]
+  }
+}

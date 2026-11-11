@@ -57,6 +57,7 @@ impl RecoverySink for Sink {
 async fn swapped_ip_updates_persistence_and_emits_one_change() {
     let store = Store::open(std::path::Path::new(":memory:")).await.unwrap();
     let input = CameraInput {
+        media_engine: None,
         id: None,
         name: "Front".into(),
         address: "192.168.1.20".into(),

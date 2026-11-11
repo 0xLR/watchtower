@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Watchtower",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "identifier": "dev.watchtower.desktop",
   "build": {
     "beforeDevCommand": "pnpm dev",
@@ -30,7 +30,8 @@
       "minimumSystemVersion": "12.0"
     },
     "externalBin": [
-      "binaries/go2rtc"
+      "binaries/go2rtc",
+      "binaries/mediamtx"
     ],
     "icon": [
       "icons/icon.png",
@@ -41,6 +42,7 @@
     "shortDescription": "Local IP camera monitor",
     "longDescription": "A private desktop RTSP and ONVIF camera monitor with identity-based address recovery.",
     "resources": {
+      "licenses/mediamtx.txt": "licenses/mediamtx.txt",
       "../src/player/vendor/LICENSE": "licenses/go2rtc.txt",
       "../../../THIRD_PARTY_NOTICES.md": "licenses/THIRD_PARTY_NOTICES.md",
       "../../../LICENSE": "licenses/WATCHTOWER-MIT.txt"

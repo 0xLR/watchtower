@@ -24,6 +24,20 @@ pub enum StreamStatus {
 pub struct Playback {
     pub websocket_url: String,
     pub hls_url: String,
+    pub engine: MediaEngine,
+    pub transports: Vec<String>,
+    pub whep_url: Option<String>,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Hash, Serialize, serde::Deserialize, TS)]
+#[ts(export, export_to = "../../../packages/ipc-types/MediaEngine.ts")]
+#[serde(rename_all = "snake_case")]
+pub enum MediaEngine {
+    Retina,
+    #[default]
+    Go2rtc,
+    #[serde(rename = "mediamtx")]
+    MediaMtx,
 }
 
 /// Implementations sanitize errors and never expose source URLs.

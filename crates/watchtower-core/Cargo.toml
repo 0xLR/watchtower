@@ -12,3 +12,5 @@ url = "2"
 percent-encoding = "2"
 thiserror.workspace = true
 uuid.workspace = true
+[dev-dependencies]
+serde_json.workspace = true

@@ -39,5 +39,6 @@ try {
   if (!target.includes('windows')) await chmod(destination, 0o755);
   console.log(`Verified go2rtc ${manifest.version} for ${target}`);
 } finally {
+  if (dirname(resolve(temporary)) !== resolve(tmpdir()) || !temporary.startsWith(join(tmpdir(), 'watchtower-sidecar-'))) throw new Error('Unexpected temporary directory');
   await rm(temporary, { recursive: true, force: true });
 }

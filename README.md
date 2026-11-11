@@ -30,6 +30,13 @@ views use the main stream. Drag tiles or use their arrow controls to reorder.
 Choose one to four columns or fit-to-count; additional cameras remain scrollable.
 Playback pauses when the window is hidden or minimized.
 
+Choose a default **Media engine** in Settings, or override it while adding/editing
+a camera. **Retina** is the native Rust H.264/WebRTC engine and starts no helper
+executable. **go2rtc** supports WebRTC/MSE/HLS; **MediaMTX** supports WebRTC/HLS.
+New profiles default to Retina; existing preferences keep go2rtc until changed.
+Unsupported Retina codecs require choosing another engine. Engines launch only
+when selected; Watchtower does not silently open streams through other engines.
+
 Choose the camera network in **Settings** to enable identity-based address
 recovery. Cameras with no stable MAC, ONVIF UUID or serial show why tracking is
 unavailable. Background address sweeps are optional and off by default.
@@ -56,7 +63,7 @@ pnpm package
 ```
 
 `pnpm build` builds the desktop executable. `pnpm package` also fetches the pinned,
-SHA-256-verified go2rtc sidecar, regenerates notices, and creates platform
+SHA-256-verified go2rtc and MediaMTX sidecars, regenerates notices, and creates platform
 installers under `target/release/bundle/`. Windows builds MSI and NSIS installers.
 The manual packaging workflow builds Windows, macOS and Linux artifacts without
 publishing a release. These builds are unsigned unless a maintainer supplies
@@ -84,9 +91,11 @@ pnpm test:media
 
 This downloads a checksum-pinned MediaMTX fixture, starts two localhost-only
 synthetic streams (720p main and 360p sub), runs sidecar and camera-service tests,
-then tests nine real playback consumers, quality switching, layout, reordering,
+then tests each engine with nine real playback consumers, quality switching, layout, reordering,
 visibility pause and forced HLS fallback in headless Chromium. It stops its own
 fixture processes afterwards. No physical camera or credentials are needed.
+HLS fallback is tested only for engines advertising it. Engine overrides,
+preference persistence, and switching after a sidecar crash are covered too.
 `pnpm fixtures` runs just the development cameras until Ctrl+C.
 
 See [validation](docs/validation.md) for the exact evidence and platform limits.
