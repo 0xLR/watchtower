@@ -18,7 +18,7 @@ mockWindows('main');
 mockIPC((command, args) => {
   const payload = args as Record<string, unknown>;
   switch (command) {
-    case 'snapshot': return { cameras, settings, media_ready: true, warning: null };
+    case 'snapshot': return { available_engines: new URL(location.href).searchParams.has('native_only') ? ['retina'] : ['retina', 'go2rtc', 'mediamtx'], cameras, settings, media_ready: true, warning: null };
     case 'app_info': return { version: '0.1.0' };
     case 'playback': Object.assign(window, { __lastPlayback: payload }); return streams?.[payload.main ? 'main' : 'sub'] ?? { websocket_url: 'ws://127.0.0.1:1/unavailable', hls_url: 'http://127.0.0.1:1/unavailable' };
     case 'test_camera': tested = payload.input as CameraInput; return 'connection-receipt';

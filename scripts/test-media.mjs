@@ -19,7 +19,7 @@ try {
     await run('cargo', ['test', '-p', 'watchtower-media', '--test', 'sidecar', '--', '--ignored']);
     await run('cargo', ['test', '-p', 'watchtower-media', '--test', 'rtsp_compatibility', '--', '--ignored']);
     await run('cargo', ['test', '-p', 'watchtower-media', '--test', 'engines', '--', '--ignored']);
-    await run('cargo', ['test', '-p', 'watchtower-desktop', 'state::tests', '--', '--ignored']);
+    await run('cargo', ['test', '-p', 'watchtower-desktop', '--features', 'go2rtc,mediamtx', 'state::tests', '--', '--ignored']);
   }
   await run('cargo', ['build', '-p', 'watchtower-media', '--example', 'fixture']);
   const engines = process.env.WATCHTOWER_TEST_ENGINE ? [process.env.WATCHTOWER_TEST_ENGINE] : ['go2rtc', 'retina', 'mediamtx'];

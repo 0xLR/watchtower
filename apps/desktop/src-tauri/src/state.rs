@@ -110,12 +110,14 @@ impl AppState {
         password: Option<&str>,
     ) -> Result<(), String> {
         let media = self.media()?;
-        let engine = camera.media_engine.unwrap_or(
-            self.store
-                .settings()
-                .await
-                .map_err(|e| e.to_string())?
-                .media_engine,
+        let engine = crate::engines::effective(
+            camera.media_engine.unwrap_or(
+                self.store
+                    .settings()
+                    .await
+                    .map_err(|e| e.to_string())?
+                    .media_engine,
+            ),
         );
         for main in [true, false] {
             let url = camera
@@ -153,11 +155,17 @@ impl AppState {
                 status,
             });
         }
+        let warning = self.media.as_ref().err().cloned().or_else(|| {
+                let unavailable = crate::engines::effective(settings.media_engine) != settings.media_engine
+                    || views.iter().any(|view| view.camera.media_engine.is_some_and(|engine| crate::engines::effective(engine) != engine));
+                unavailable.then(|| "A saved media engine is not included in this build. Using Retina; saved engine preferences are preserved. Retina supports H.264 video only.".into())
+            });
         Ok(AppSnapshot {
+            available_engines: crate::engines::available(),
             cameras: views,
             settings,
             media_ready: self.media.is_ok(),
-            warning: self.media.as_ref().err().cloned(),
+            warning,
         })
     }
     pub async fn playback(&self, id: &str, main: bool) -> Result<Playback, String> {
@@ -176,12 +184,14 @@ impl AppState {
             .map_err(|e| e.to_string())?;
         let stream = stream_id(id, main);
         let media = self.media()?;
-        let engine = camera.media_engine.unwrap_or(
-            self.store
-                .settings()
-                .await
-                .map_err(|e| e.to_string())?
-                .media_engine,
+        let engine = crate::engines::effective(
+            camera.media_engine.unwrap_or(
+                self.store
+                    .settings()
+                    .await
+                    .map_err(|e| e.to_string())?
+                    .media_engine,
+            ),
         );
         media.ensure_stream_on(&stream, &source, engine).await?;
         Ok(media.playback(&stream))
@@ -246,12 +256,14 @@ impl AppState {
             let url = camera
                 .source_url(password.as_deref(), main)
                 .map_err(|e| e.to_string())?;
-            let engine = camera.media_engine.unwrap_or(
-                self.store
-                    .settings()
-                    .await
-                    .map_err(|e| e.to_string())?
-                    .media_engine,
+            let engine = crate::engines::effective(
+                camera.media_engine.unwrap_or(
+                    self.store
+                        .settings()
+                        .await
+                        .map_err(|e| e.to_string())?
+                        .media_engine,
+                ),
             );
             media.ensure_stream_on(&test_id, &url, engine).await?;
             let result = media.test_stream(&test_id).await.map_err(|e| e.to_string());

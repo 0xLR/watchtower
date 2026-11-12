@@ -1,15 +1,38 @@
 # Packaging and release review
 
-`pnpm package` downloads and verifies the pinned go2rtc and MediaMTX sidecars, regenerates
-third-party notices and invokes Tauri bundling. Artifacts are under
-`target/release/bundle/`. The manual GitHub workflow builds Windows MSI/NSIS,
-macOS app/DMG, and Linux DEB/RPM artifacts; it does not publish a release.
+`pnpm package` builds a Retina-only installer: no go2rtc or MediaMTX download,
+executable, or MediaMTX license resource is required. Retina runs inside the app.
+Artifacts are under `target/release/bundle/`.
 
-The sidecars are bundled as external binaries and launch only when selected.
-Retina is compiled into the application. All installers include the
-application MIT license, go2rtc and MediaMTX MIT licenses, and a generated dependency notice
-file with original texts and versioned source links. The five MPL-2.0 transitive
-Tauri dependencies are an explicit user-approved exception (ADR 0004).
+Optional build profiles retain the sidecar adapters:
+
+| Command | Included engines |
+| --- | --- |
+| `pnpm package` | Retina |
+| `pnpm package:go2rtc` | Retina + go2rtc |
+| `pnpm package:mediamtx` | Retina + MediaMTX |
+| `pnpm package:all-engines` | Retina + both sidecars |
+
+Each optional command fetches and checksum-verifies only its selected binaries,
+regenerates notices, and applies a Tauri config overlay that enables the matching
+Cargo features and external binaries together. For development, fetch the desired
+sidecar with its `scripts/fetch-*.mjs` helper and run, for example,
+`pnpm --filter @watchtower/desktop tauri dev --config src-tauri/tauri.go2rtc.conf.json`.
+Using Cargo features alone does not add executables to an installer; use the profile.
+These are build-time choices, with no runtime downloads or external executable picker.
+Existing files in the source `binaries` directory are not bundled by the native profile.
+
+The engine picker exposes only engines included in the build. Saved preferences
+for omitted engines are preserved; playback and connection tests use Retina with
+a visible notice. H.264 video is required for that fallback. Reinstalling a build
+with the selected sidecar restores its use without editing camera preferences.
+
+The manual GitHub packaging workflow offers the same four profiles and does not
+publish releases. All installers include the application MIT license, the go2rtc
+MIT license for the vendored browser player, and generated dependency notices.
+MediaMTX's MIT license is added with its executable. Dependency notices remain a
+conservative superset across profiles. The five Tauri MPL dependencies are the
+approved exceptions (ADR 0004). No dependency versions changed for this work.
 
 Signing credentials were not available during implementation. Windows builds
 are unsigned. macOS signing/notarization and Windows certificate configuration

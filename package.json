@@ -8,11 +8,15 @@
     "test": "pnpm --filter @watchtower/desktop test && cargo test --workspace",
     "lint": "pnpm --filter @watchtower/desktop lint && cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings",
     "sidecar": "node scripts/fetch-go2rtc.mjs && node scripts/fetch-mediamtx.mjs",
-    "package": "pnpm sidecar && pnpm notices && pnpm --filter @watchtower/desktop tauri build",
+    "package": "pnpm notices && pnpm --filter @watchtower/desktop tauri build",
     "test:smoke": "pnpm --filter @watchtower/desktop test:smoke",
     "fixtures": "node scripts/dev-fixtures.mjs",
     "test:media": "node scripts/test-media.mjs",
     "test:saved": "node scripts/test-saved-media.mjs",
-    "notices": "node scripts/generate-notices.mjs"
+    "notices": "node scripts/generate-notices.mjs",
+    "package:go2rtc": "node scripts/fetch-go2rtc.mjs && pnpm notices && pnpm --filter @watchtower/desktop tauri build --config src-tauri/tauri.go2rtc.conf.json",
+    "package:mediamtx": "node scripts/fetch-mediamtx.mjs && pnpm notices && pnpm --filter @watchtower/desktop tauri build --config src-tauri/tauri.mediamtx.conf.json",
+    "package:all-engines": "node scripts/fetch-go2rtc.mjs && node scripts/fetch-mediamtx.mjs && pnpm notices && pnpm --filter @watchtower/desktop tauri build --config src-tauri/tauri.all-engines.conf.json",
+    "test:packaging": "node --test scripts/packaging.test.mjs"
   }
 }

@@ -120,6 +120,22 @@ test('engine preference persists and camera override invalidates its test', asyn
   await expect(page.getByLabel('Media engine', { exact: true })).toHaveValue('mediamtx');
 });
 
+test('native-only build offers Retina while preserving an unavailable saved choice', async ({ page }) => {
+  await page.goto('/e2e/harness.html?native_only');
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  const engine = page.getByLabel('Media engine', { exact: true });
+  await expect(engine.locator('option:not([disabled])')).toHaveCount(1);
+  await expect(engine.locator('option:not([disabled])')).toHaveAttribute('value', 'retina');
+  if (await engine.inputValue() !== 'retina') {
+    await expect(engine.locator('option:checked')).toBeDisabled();
+    await expect(engine.locator('option:checked')).toContainText('not included; using Retina');
+  }
+  await engine.selectOption('retina');
+  await page.getByRole('button', { name: 'Save preferences' }).click();
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
+  await expect(page.getByLabel('Media engine', { exact: true })).toHaveValue('retina');
+});
+
 test('native and MediaMTX deliver synthetic video through WebRTC', async ({ page }) => {
   test.skip(!['retina', 'mediamtx'].includes(process.env.WATCHTOWER_TEST_ENGINE ?? ''), 'WHEP engine test');
   test.skip(!!process.env.WATCHTOWER_SAVED_SOURCES, 'Uses the synthetic H.264 fixture');

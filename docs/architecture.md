@@ -26,10 +26,14 @@ among viewers and stops when unused. MediaMTX adds a supervised optional adapter
 with WHEP and fMP4 HLS. Playback descriptors list each engine's transports;
 fallback skips unsupported modes. The frontend owns WHEP session cleanup.
 See [ADR 0006](adr/0006-selectable-media-engines.md) for lifecycle and security.
+Standard builds include Retina only. Tauri overlays enable go2rtc, MediaMTX, or
+both; the desktop backend reports those capabilities and resolves absent saved
+engines to Retina without rewriting stored preferences. See
+[ADR 0007](adr/0007-optional-sidecar-builds.md).
 
 The following go2rtc-specific isolation remains in its adapter:
 
-The pinned go2rtc binary is bundled beside the executable. Development fetches
+In go2rtc-enabled builds, the pinned go2rtc binary is bundled beside the executable. Development fetches
 use upstream SHA-256 digests checked into the repository. The supervisor retries
 port selection/startup, restarts crashed children and replays in-memory stream
 registrations. Stream mutations and replay are serialized.

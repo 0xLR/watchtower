@@ -1,0 +1,15 @@
+{
+  "build": {
+    "features": [
+      "mediamtx"
+    ]
+  },
+  "bundle": {
+    "externalBin": [
+      "binaries/mediamtx"
+    ],
+    "resources": {
+      "licenses/mediamtx.txt": "licenses/mediamtx.txt"
+    }
+  }
+}

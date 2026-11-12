@@ -79,6 +79,7 @@ impl Default for Settings {
 #[derive(Clone, Serialize, TS)]
 #[ts(export, export_to = "../../../packages/ipc-types/AppSnapshot.ts")]
 pub struct AppSnapshot {
+    pub available_engines: Vec<crate::MediaEngine>,
     pub cameras: Vec<CameraView>,
     pub settings: Settings,
     pub media_ready: bool,

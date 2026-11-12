@@ -1,0 +1,12 @@
+{
+  "build": {
+    "features": [
+      "go2rtc"
+    ]
+  },
+  "bundle": {
+    "externalBin": [
+      "binaries/go2rtc"
+    ]
+  }
+}

@@ -29,10 +29,7 @@
     "macOS": {
       "minimumSystemVersion": "12.0"
     },
-    "externalBin": [
-      "binaries/go2rtc",
-      "binaries/mediamtx"
-    ],
+    "externalBin": [],
     "icon": [
       "icons/icon.png",
       "icons/icon.ico",
@@ -42,7 +39,6 @@
     "shortDescription": "Local IP camera monitor",
     "longDescription": "A private desktop RTSP and ONVIF camera monitor with identity-based address recovery.",
     "resources": {
-      "licenses/mediamtx.txt": "licenses/mediamtx.txt",
       "../src/player/vendor/LICENSE": "licenses/go2rtc.txt",
       "../../../THIRD_PARTY_NOTICES.md": "licenses/THIRD_PARTY_NOTICES.md",
       "../../../LICENSE": "licenses/WATCHTOWER-MIT.txt"

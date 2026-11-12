@@ -28,6 +28,8 @@ jobs:
       - run: pnpm --filter @watchtower/desktop build
       - run: pnpm test
       - run: git diff --exit-code -- packages/ipc-types
+      - run: pnpm test:packaging
+      - run: cargo test -p watchtower-desktop --features go2rtc,mediamtx engines::tests
       - run: pnpm lint
       - name: Install headless test browser
         if: runner.os == 'Linux'

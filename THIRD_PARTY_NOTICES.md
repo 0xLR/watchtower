@@ -2,9 +2,9 @@
 
 Generated from Cargo.lock and installed pnpm packages. This includes build, test and alternate-platform dependencies. Original license texts below are unmodified; source links identify each version. The application itself is MIT licensed. System webviews are provided by the operating system.
 
-Bundled media engine and player: go2rtc v1.9.15, MIT, https://github.com/AlexxIT/go2rtc/tree/v1.9.15 . Its complete license is included alongside this file as go2rtc.txt.
+Vendored browser player and optional media engine: go2rtc v1.9.15, MIT, https://github.com/AlexxIT/go2rtc/tree/v1.9.15 . Its complete license is included alongside this file as go2rtc.txt.
 
-Bundled optional media engine: MediaMTX v1.21.3, MIT, https://github.com/bluenviron/mediamtx/tree/v1.21.3 . Its complete license is included alongside this file as mediamtx.txt. Native Retina and WebRTC crate notices follow below.
+Optional media engine (included only in MediaMTX build profiles): MediaMTX v1.21.3, MIT, https://github.com/bluenviron/mediamtx/tree/v1.21.3 . When bundled, its complete license is included alongside this file as mediamtx.txt. Native Retina and WebRTC crate notices follow below.
 
 ## @babel/code-frame 7.29.7
 

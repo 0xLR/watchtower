@@ -13,6 +13,7 @@ import { Button, Readout } from '../design/primitives';
 import { Dialog } from '../design/Dialog';
 import { useWindowPaused } from '../lib/useWindowPaused';
 import type { PlayerState } from '../player/StreamPlayer';
+import { EngineAvailability } from '../features/settings/EngineAvailability';
 
 export function App() {
   const [discovered, setDiscovered] = useState<ObservedDevice>();
@@ -42,7 +43,7 @@ export function App() {
   const edit = snapshot?.cameras.find(view => view.camera.id === panel);
   const count = snapshot?.cameras.length ?? 0;
   const live = snapshot?.cameras.filter(view => statuses[view.camera.id] === 'live').length ?? 0;
-  return <div className="shell">
+  return <EngineAvailability.Provider value={snapshot?.available_engines ?? ['retina']}><div className="shell">
     <header className="topbar"><div className="wordmark">WATCHTOWER<span>LOCAL CAMERA MONITOR</span></div><div className="header-readouts"><Readout label="LIVE" value={`${String(live).padStart(2, '0')} / ${String(count).padStart(2, '0')}`} /><Readout label="LOCAL TIME" value={clock || '—'} /></div><nav aria-label="Configuration"><button className="text-button" onClick={() => setPanel('cameras')}>Cameras</button><button className="text-button" onClick={() => setPanel('settings')}>Settings</button></nav></header>
     <main><div className="section-heading"><div><p className="eyebrow">MONITOR / 01</p><h1>Live view</h1></div><div className="toolbar"><label className="layout-select">Layout<select aria-label="Grid layout" value={snapshot?.settings.layout ?? 'auto'} onChange={e => void layout(e.target.value as Layout)}><option value="auto">Fit to count</option><option value="1">1 column</option><option value="2">2 × 2</option><option value="3">3 × 3</option><option value="4">4 × 4</option></select></label><Button onClick={() => setPanel('discovery')}>Find cameras</Button><Button onClick={() => { setDiscovered(undefined); setPanel('add'); }}>+ Add camera</Button></div></div>
       {error && <div className="banner error-line" role="alert">{error}<button className="text-button" onClick={() => void refresh()}>Retry</button></div>}
@@ -57,5 +58,5 @@ export function App() {
       {panel === 'settings' && snapshot && <SettingsForm settings={snapshot.settings} onSaved={() => { setPanel(undefined); void refresh(); }} />}
       {panel === 'cameras' && <div className="stack">{count === 0 && <p className="supporting">No cameras configured.</p>}{snapshot?.cameras.map(view => <div className="camera-list-row" key={view.camera.id}><div><strong>{view.camera.name}</strong><p>{view.camera.host}:{view.camera.port}</p><span className="field-help">{view.tracking ? 'Address tracking enabled' : view.camera.is_local ? view.identity.mac || view.identity.onvif_endpoint_uuid || view.identity.serial ? 'Choose a camera network in Settings to enable address tracking' : 'Address tracking unavailable: no stable identity found' : 'Remote host: address tracking off'}</span></div><Button onClick={() => setPanel(view.camera.id)}>Edit</Button></div>)}<Button onClick={() => { setDiscovered(undefined); setPanel('add'); }}>+ Add camera</Button></div>}
     </Dialog>}
-  </div>;
+  </div></EngineAvailability.Provider>;
 }

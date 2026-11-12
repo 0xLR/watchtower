@@ -141,3 +141,24 @@ Retina currently supports H.264 video over WebRTC without transcoding or audio.
 Other codecs require another engine. These Windows/Chromium checks do not
 establish macOS or Linux runtime compatibility. No physical C530WS connection
 success, signing, clean-machine installation, or CI execution is claimed.
+
+## Retina-only packaging, 2026-11-12
+
+- Standard `pnpm package` succeeds without fetching sidecars. The Windows NSIS
+  installer is 7.11 MiB and the MSI is 10.75 MiB (previously 36.57/46.16 MiB).
+- Read-only inspection of the resulting MSI File table confirms its only app
+  executable is `watchtower-desktop.exe`. The other payload files are the app MIT
+  license, vendored go2rtc browser-player MIT license, and dependency notices.
+  Neither media executable nor the MediaMTX license is present. The generated
+  NSIS installation script likewise lists no media sidecars.
+- Four packaging-profile tests pass. Desktop engine capability/fallback tests
+  pass with no features and with both optional features enabled. `cargo test
+  --workspace`, frontend tests (8), frontend lint, formatting, and workspace
+  Clippy all pass. A focused Playwright test confirms the native-only picker,
+  disabled explanation for an omitted saved engine, and saving Retina.
+- Optional Tauri overlays pair Cargo capabilities with the exact requested
+  external binaries. Optional installer profiles were not rebuilt in this
+  follow-up. Their adapters retain the prior real-stream verification above.
+- Notices were regenerated for the same 899 dependency versions; only the
+  profile-dependent sidecar description changed. No dependencies were added.
+  Installers remain unsigned; no installation or publication was performed.

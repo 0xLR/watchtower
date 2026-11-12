@@ -28,6 +28,9 @@ watchtower-onvif = { path = "../../../crates/watchtower-onvif" }
 futures-util = "0.3"
 tauri-plugin-single-instance = "2"
 [features]
+default = []
+go2rtc = []
+mediamtx = []
 custom-protocol = ["tauri/custom-protocol"]
 
 

@@ -33,7 +33,8 @@ Playback pauses when the window is hidden or minimized.
 Choose a default **Media engine** in Settings, or override it while adding/editing
 a camera. **Retina** is the native Rust H.264/WebRTC engine and starts no helper
 executable. **go2rtc** supports WebRTC/MSE/HLS; **MediaMTX** supports WebRTC/HLS.
-New profiles default to Retina; existing preferences keep go2rtc until changed.
+Standard builds include Retina only. Optional build profiles add go2rtc and/or MediaMTX.
+Saved selections for omitted engines fall back to Retina with a notice, without changing preferences.
 Unsupported Retina codecs require choosing another engine. Engines launch only
 when selected; Watchtower does not silently open streams through other engines.
 
@@ -51,7 +52,6 @@ build packages, including `libdbus-1-dev`.
 
 ```
 pnpm install --frozen-lockfile
-pnpm sidecar
 pnpm dev
 ```
 
@@ -62,8 +62,7 @@ pnpm build
 pnpm package
 ```
 
-`pnpm build` builds the desktop executable. `pnpm package` also fetches the pinned,
-SHA-256-verified go2rtc and MediaMTX sidecars, regenerates notices, and creates platform
+`pnpm build` builds the desktop executable. `pnpm package` regenerates notices and creates Retina-only platform
 installers under `target/release/bundle/`. Windows builds MSI and NSIS installers.
 The manual packaging workflow builds Windows, macOS and Linux artifacts without
 publishing a release. These builds are unsigned unless a maintainer supplies
@@ -120,7 +119,11 @@ future work. RTSP URL query parameters are restricted to `channel`, `subtype`,
 Watchtower is [MIT licensed](LICENSE). Tauri's five transitive MPL-2.0 dependencies
 are an explicitly approved exception to the dependency policy; original notices
 and versioned source links are included in [third-party notices](THIRD_PARTY_NOTICES.md)
-and in packaged installers. FFmpeg and MediaMTX are development fixtures only.
+and in packaged installers. FFmpeg is a development fixture only; MediaMTX is also an optional playback engine.
 
 See [architecture](docs/architecture.md), [IP tracking](docs/ip-tracking.md),
 [design system](docs/design-system.md), and [roadmap](docs/roadmap.md).
+
+Optional installers: `pnpm package:go2rtc`, `pnpm package:mediamtx`, or
+`pnpm package:all-engines`. These download and bundle only the selected sidecars.
+See [packaging](docs/packaging.md) for build and development profiles.
